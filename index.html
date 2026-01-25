@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BROADCAST SUITE // Masik52XD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --accent: #bc13fe;
+            --neon: #00f2ff;
+            --bg: #020205;
+            --surface: #0a0a15;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+
+        * { cursor: crosshair; scroll-behavior: smooth; box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- BACKGROUND FX --- */
+        .grid-bg {
+            position: fixed; inset: 0;
+            background-image: 
+                linear-gradient(rgba(188, 19, 254, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(188, 19, 254, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+        }
+
+        /* --- LOADING SYSTEM --- */
+        #boot-screen {
+            position: fixed; inset: 0; background: #000; z-index: 10000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-family: 'Fira Code', monospace; color: var(--neon);
+        }
+        .progress-bar { width: 200px; height: 2px; background: #111; margin-top: 20px; position: relative; }
+        .progress-fill { position: absolute; top: 0; left: 0; height: 100%; background: var(--neon); width: 0%; box-shadow: 0 0 10px var(--neon); }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 20px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(2, 2, 5, 0.8); backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05); z-index: 1000;
+        }
+        .logo { font-family: 'Orbitron'; font-weight: 900; letter-spacing: 2px; color: var(--accent); }
+        .nav-links a { color: #94a3b8; text-decoration: none; margin-left: 30px; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
+        .nav-links a:hover { color: var(--neon); text-shadow: 0 0 10px var(--neon); }
+
+        /* --- HERO --- */
+        .hero {
+            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 0 20px;
+        }
+        .hero h1 {
+            font-family: 'Orbitron'; font-size: clamp(3rem, 10vw, 7rem); margin: 0;
+            background: linear-gradient(to bottom, #fff, #666); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero p { font-size: 1.5rem; color: var(--accent); letter-spacing: 10px; margin-top: 10px; font-weight: bold; }
+
+        /* --- DASHBOARD SECTION --- */
+        .section { padding: 100px 5%; max-width: 1400px; margin: 0 auto; }
+        .section-title { font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 50px; display: flex; align-items: center; gap: 20px; }
+        .section-title::after { content: ""; flex-grow: 1; height: 1px; background: linear-gradient(to right, var(--accent), transparent); }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .tool-card {
+            background: var(--surface); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px; padding: 40px; position: relative; overflow: hidden;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none; color: white;
+        }
+        .tool-card:hover { transform: translateY(-15px); border-color: var(--neon); box-shadow: 0 20px 50px rgba(0, 242, 255, 0.1); }
+        .tool-card h3 { font-family: 'Orbitron'; font-size: 1.8rem; margin: 0 0 15px 0; color: var(--neon); }
+        .tool-card p { color: #94a3b8; font-size: 1.1rem; line-height: 1.6; }
+        .tool-tag { position: absolute; top: 20px; right: 20px; font-size: 10px; color: var(--accent); border: 1px solid var(--accent); padding: 2px 8px; border-radius: 4px; }
+
+        /* --- ABOUT / ARG --- */
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
+        .terminal {
+            background: #000; border: 1px solid #222; border-radius: 10px; padding: 20px;
+            font-family: 'Fira Code', monospace; box-shadow: 0 0 30px rgba(188, 19, 254, 0.1);
+        }
+        .term-header { color: #444; font-size: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .term-body { color: #aaa; min-height: 200px; }
+        .term-input-line { display: flex; color: var(--neon); margin-top: 10px; }
+        .term-input { background: transparent; border: none; color: white; outline: none; flex-grow: 1; font-family: inherit; margin-left: 10px; }
+
+        /* --- FOOTER --- */
+        footer { padding: 100px 20px; text-align: center; border-top: 1px solid #111; margin-top: 100px; }
+        .heart { color: var(--accent); cursor: pointer; transition: 0.3s; }
+        .heart:hover { text-shadow: 0 0 20px var(--accent); transform: scale(1.5); }
+
+        /* --- glitch easter egg --- */
+        .glitch-active { animation: glitch-shake 0.1s infinite; filter: hue-rotate(90deg); }
+        @keyframes glitch-shake { from { transform: translate(2px); } to { transform: translate(-2px); } }
+    </style>
+</head>
+<body>
+
+<div id="boot-screen">
+    <div style="font-size: 14px; letter-spacing: 5px;">MASIK_BROADCAST_OS v4.0</div>
+    <div class="progress-bar"><div class="progress-fill" id="boot-progress"></div></div>
+    <div id="boot-status" style="margin-top: 10px; font-size: 10px; opacity: 0.5;">LOADING CORE MODULES...</div>
+</div>
+
+<div class="grid-bg"></div>
+
+<nav>
+    <div class="logo">BROADCAST SUITE</div>
+    <div class="nav-links">
+        <a href="#suite">Tools</a>
+        <a href="#about">About System</a>
+        <a href="https://masik52xd.github.io/co/">Portfolio</a>
+    </div>
+</nav>
+
+<section class="hero">
+    <h1>UNITING ESPORTS</h1>
+    <p>TOOLS FOR THE NEXT GENERATION</p>
+    <div style="margin-top: 40px; font-family: 'Fira Code'; color: #444; font-size: 12px;">SCROLL TO INITIALIZE INTERFACE</div>
+</section>
+
+<section class="section" id="suite">
+    <h2 class="section-title">01. THE TOOLBOX</h2>
+    <div class="tools-grid">
+        <a href="bracket.html" class="tool-card">
+            <div class="tool-tag">LIVE ENGINE</div>
+            <h3>Tournament Bracket</h3>
+            <p>Dynamic tournament bracket. Supports Single/Double Elimination and Round Robin. Manage winners with a single click.</p>
+        </a>
+        <a href="results.html" class="tool-card">
+            <div class="tool-tag">ASSET GEN</div>
+            <h3>Match Results</h3>
+            <p>Social media graphics generator. Transform dry statistics into professional reports in the style of major leagues.</p>
+        </a>
+        <a href="overlay.html" class="tool-card">
+            <div class="tool-tag">OBS SOURCE</div>
+            <h3>Neon Overlays</h3>
+            <p>Interactive stream overlays. Cyclic ads, neon effects, and notifications managed directly in OBS.</p>
+        </a>
+        <a href="hype.html" class="tool-card">
+            <div class="tool-tag">PRE-MATCH</div>
+            <h3>Analytics Studio</h3>
+            <p>Map veto and team comparison. A professional analytics studio right in your browser.</p>
+        </a>
+        <a href="waiting.html" class="tool-card">
+            <div class="tool-tag">BROADCAST</div>
+            <h3>Wait Screen Pro</h3>
+            <p>Waiting screen generator. Grunge ESL style with dynamic backgrounds and customizable match stages.</p>
+        </a>
+    </div>
+</section>
+
+<section class="section" id="about">
+    <h2 class="section-title">02. SYSTEM ACCESS</h2>
+    <div class="about-grid">
+        <div>
+            <h3>Why did we build this?</h3>
+            <p style="font-size: 1.2rem; color: #94a3b8; line-height: 1.8;">
+                Broadcast Suite is an initiative by Masik52XD to democratize esports production. 
+                We believe every independent organizer deserves high-quality graphics without needing thousand-dollar budgets.
+            </p>
+            <p style="color: var(--accent); font-weight: bold; margin-top: 20px;">
+                > ALL TOOLS ARE COMPLETELY FREE <br>
+                > NO WATERMARKS <br>
+                > OPTIMIZED FOR OBS / VMIX
+            </p>
+        </div>
+        <div class="terminal">
+            <div class="term-header">
+                <span>TERMINAL v4.0</span>
+                <span id="term-status">READY</span>
+            </div>
+            <div id="term-log" class="term-body" style="font-size: 13px;">
+                <div>[SYSTEM]: BROADCAST SUITE INITIALIZED...</div>
+                <div>[SYSTEM]: WELCOME, OPERATOR.</div>
+                <div>[SYSTEM]: TYPE 'HELP' FOR COMMANDS.</div>
+            </div>
+            <div class="term-input-line">
+                <span>></span>
+                <input type="text" id="t-input" class="term-input" autofocus placeholder="type 'help'...">
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div style="font-size: 1.2rem; letter-spacing: 2px;">
+        CREATED WITH <span class="heart" id="h-trigger">❤️</span> FOR THE GLOBAL COMMUNITY
+    </div>
+    <div style="margin-top: 20px; color: #334155; font-size: 14px; font-family: 'Fira Code';">
+        HOSTED ON GITHUB PAGES // ENCRYPTED ACCESS ONLY
+    </div>
+</footer>
+
+<div id="secret-msg" style="position: fixed; bottom: 20px; right: 20px; background: var(--neon); color: #000; padding: 10px; font-weight: 900; display: none; z-index: 10000;"></div>
+
+<script>
+    // --- BOOT LOADER ---
+    let progress = 0;
+    const fill = document.getElementById('boot-progress');
+    const status = document.getElementById('boot-status');
+    
+    const boot = setInterval(() => {
+        progress += Math.random() * 5;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(boot);
+            setTimeout(() => {
+                document.getElementById('boot-screen').style.opacity = '0';
+                setTimeout(() => document.getElementById('boot-screen').remove(), 1000);
+            }, 500);
+        }
+        fill.style.width = progress + '%';
+        if (progress > 30) status.innerText = "LINKING GRAPHICS ENGINE...";
+        if (progress > 60) status.innerText = "DECRYPTING ASSETS...";
+        if (progress > 85) status.innerText = "BROADCAST READY.";
+    }, 60);
+
+    // --- TERMINAL ARG SYSTEM ---
+    const tInput = document.getElementById('t-input');
+    const tLog = document.getElementById('term-log');
+
+    tInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const cmd = tInput.value.toLowerCase().trim();
+            tInput.value = '';
+            runCommand(cmd);
+        }
+    });
+
+    function runCommand(cmd) {
+        let response = "";
+        if (cmd === 'help') response = "COMMANDS: STATUS, TOOLS, MASIK, GLITCH, CLEAR, SECRET";
+        else if (cmd === 'status') response = "ALL SYSTEMS NOMINAL. LATENCY: 14MS. ENCRYPTION: AES-256.";
+        else if (cmd === 'tools') response = "5 ACTIVE MODULES DETECTED. ALL FREE ACCESS.";
+        else if (cmd === 'masik') response = "AUTHOR IDENTIFIED: MASIK52XD. POSITION: CORE ARCHITECT.";
+        else if (cmd === 'glitch') {
+            document.body.classList.add('glitch-active');
+            setTimeout(() => document.body.classList.remove('glitch-active'), 3000);
+            response = "WARNING: TEMPORAL ANOMALY DETECTED.";
+        }
+        else if (cmd === 'secret') {
+            response = "PASSWORD REQUIRED. HINT: WHAT DO YOU SEND TO A TEAM BEFORE A GAME? (veto)";
+        }
+        else if (cmd === 'veto') {
+            confetti({ particleCount: 200, spread: 70 });
+            response = "ACCESS GRANTED: YOU ARE NOW A MASTER BROADCASTER!";
+        }
+        else if (cmd === 'clear') { tLog.innerHTML = ''; return; }
+        else response = "ERROR: COMMAND NOT RECOGNIZED.";
+
+        const div = document.createElement('div');
+        div.innerHTML = `<span style="color:#555">>> ${cmd.toUpperCase()}:</span> ${response}`;
+        tLog.appendChild(div);
+        tLog.scrollTop = tLog.scrollHeight;
+    }
+
+    // --- HEART EGG ---
+    let hClicks = 0;
+    document.getElementById('h-trigger').onclick = () => {
+        hClicks++;
+        if (hClicks === 7) {
+            confetti({ particleCount: 100, colors: ['#bc13fe', '#00f2ff'] });
+            msg("BROADCAST COMMUNITY <3 YOU");
+            hClicks = 0;
+        }
+    }
+
+    function msg(text) {
+        const m = document.getElementById('secret-msg');
+        m.innerText = text; m.style.display = 'block';
+        setTimeout(() => m.style.display = 'none', 3000);
+    }
+
+    console.log("%c BROADCAST SUITE TERMINAL %c Type 'masik' for author info. ", "background: #bc13fe; color: white; padding: 5px; font-weight: bold;", "color: #00f2ff;");
+</script>
+
+</body>
+</html>
