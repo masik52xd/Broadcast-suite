@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ESL Style Wait Screen Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --esl-yellow: #ffff00;
+            --bg-dark: #0a0a0a;
+        }
+
+        body {
+            font-family: 'Oswald', sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            display: flex;
+            margin: 0;
+            height: 100vh;
+        }
+
+        /* Control Panel */
+        .controls {
+            width: 380px;
+            background: #222;
+            padding: 20px;
+            border-right: 4px solid var(--esl-yellow);
+            overflow-y: auto;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        .input-group { margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        label { display: block; font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .row { display: flex; gap: 10px; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--esl-yellow);
+            color: black;
+            border: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+
+        /* Preview Area */
+        .preview-area {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            padding: 20px;
+        }
+
+        #match-screen {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at center, rgba(255,255,255,0.03) 0%, transparent 80%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between; /* Even distribution */
+            padding: 50px 0;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* Background Text Overlay */
+        #bg-repeat {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-wrap: wrap; gap: 40px; padding: 20px;
+            opacity: 0.04; font-size: 70px; font-weight: 900;
+            transform: rotate(-10deg) scale(1.3);
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+
+        /* Top Section (Logo + Tournament) */
+        .header-section {
+            text-align: center;
+            z-index: 2;
+            width: 100%;
+        }
+
+        #top-logo-container {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .top-logo-img { max-height: 80px; object-fit: contain; }
+
+        .tournament-name {
+            font-size: 75px;
+            line-height: 0.85;
+            color: var(--esl-yellow);
+            margin: 0;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .sub-text {
+            font-size: 32px;
+            letter-spacing: 4px;
+            margin-top: 5px;
+            text-transform: uppercase;
+            color: #eee;
+        }
+
+        /* Center Section (Teams) */
+        .teams-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            z-index: 2;
+            width: 100%;
+        }
+
+        .team-box { display: flex; flex-direction: column; align-items: center; width: 350px; }
+        
+        .logo-frame {
+            width: 320px;
+            height: 320px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            padding: 35px; box-sizing: border-box;
+        }
+
+        .team-logo-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        .name-bar {
+            width: 100%;
+            background: var(--esl-yellow);
+            color: black;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 34px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 15px;
+            clip-path: polygon(3% 0%, 100% 0%, 97% 100%, 0% 100%);
+        }
+
+        .vs-blob {
+            width: 160px; height: 160px;
+            background: white; color: black;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 85px; font-weight: 900;
+            border-radius: 20% 80% 25% 75% / 70% 30% 70% 30%;
+            transform: rotate(-3deg);
+            box-shadow: 12px 12px 0px rgba(0,0,0,0.4);
+        }
+
+        /* Bottom Section (Stage) */
+        .footer-stage {
+            z-index: 2;
+            width: 90%;
+            text-align: center;
+            border-top: 2px solid rgba(255,255,255,0.15);
+            padding-top: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #out-stage {
+            font-size: 55px;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            margin: 0;
+            white-space: nowrap;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h2>ESL Wait Screen v1.1</h2>
+    
+    <div class="input-group">
+        <label><input type="checkbox" id="check-logo" checked onchange="update()"> Show Top Logo</label>
+        <input type="file" onchange="loadImg(event, 'top-logo')" style="font-size: 10px; margin-top:5px">
+    </div>
+
+    <div class="input-group">
+        <label>Tournament Name (Yellow)</label>
+        <input type="text" id="in-tour" value="BSL HARD DAYS" oninput="update()">
+    </div>
+    
+    <div class="input-group">
+        <label>Subtitle / Background Text</label>
+        <input type="text" id="in-sub" value="SEASON DACHA 2" oninput="update()">
+    </div>
+
+    <div class="row">
+        <div class="input-group">
+            <label>Team 1</label>
+            <input type="text" id="in-t1-n" value="TRUE" oninput="update()">
+            <input type="file" onchange="loadImg(event, 'img-t1')" style="font-size:10px">
+        </div>
+        <div class="input-group">
+            <label>Team 2</label>
+            <input type="text" id="in-t2-n" value="OUTS" oninput="update()">
+            <input type="file" onchange="loadImg(event, 'img-t2')" style="font-size:10px">
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>Stage (Bottom Text)</label>
+        <input type="text" id="in-stage" value="PLAY-OFFS" oninput="update()">
+        <label style="margin-top:5px">Font Size (px)</label>
+        <input type="number" id="in-stage-size" value="55" oninput="update()">
+    </div>
+
+    <button onclick="saveImage()">Download as PNG</button>
+</div>
+
+<div class="preview-area">
+    <div id="match-screen">
+        <div id="bg-repeat">SEASON DACHA 2 SEASON DACHA 2 SEASON DACHA 2</div>
+
+        <div class="header-section">
+            <div id="top-logo-container">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/ESL_Logo.svg/1200px-ESL_Logo.svg.png" id="top-logo" class="top-logo-img">
+            </div>
+            <h1 class="tournament-name" id="out-tour">BSL HARD DAYS</h1>
+            <div class="sub-text" id="out-sub">SEASON DACHA 2</div>
+        </div>
+
+        <div class="teams-row">
+            <div class="team-box">
+                <div class="logo-frame">
+                    <img src="https://via.placeholder.com/250" id="img-t1" class="team-logo-img">
+                </div>
+                <div class="name-bar" id="out-t1-n">TRUE</div>
+            </div>
+
+            <div class="vs-blob">VS</div>
+
+            <div class="team-container team-box">
+                <div class="logo-frame">
+                    <img src="https://via.placeholder.com/250" id="img-t2" class="team-logo-img">
+                </div>
+                <div class="name-bar" id="out-t2-n">OUTS</div>
+            </div>
+        </div>
+
+        <div class="footer-stage">
+            <h2 id="out-stage">PLAY-OFFS</h2>
+        </div>
+    </div>
+</div>
+
+<script>
+    function update() {
+        // Text updates
+        document.getElementById('out-tour').innerText = document.getElementById('in-tour').value;
+        document.getElementById('out-sub').innerText = document.getElementById('in-sub').value;
+        document.getElementById('out-t1-n').innerText = document.getElementById('in-t1-n').value;
+        document.getElementById('out-t2-n').innerText = document.getElementById('in-t2-n').value;
+        
+        // Bottom stage and font size
+        const stageEl = document.getElementById('out-stage');
+        stageEl.innerText = document.getElementById('in-stage').value;
+        stageEl.style.fontSize = document.getElementById('in-stage-size').value + 'px';
+
+        // Logo toggle
+        const showLogo = document.getElementById('check-logo').checked;
+        document.getElementById('top-logo-container').style.display = showLogo ? 'flex' : 'none';
+
+        // Background repeat
+        const subVal = document.getElementById('in-sub').value;
+        let bgHtml = '';
+        for(let i=0; i<15; i++) { bgHtml += subVal + ' '; }
+        document.getElementById('bg-repeat').innerText = bgHtml;
+    }
+
+    function loadImg(event, id) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => { document.getElementById(id).src = reader.result; };
+        reader.readAsDataURL(file);
+    }
+
+    function saveImage() {
+        const el = document.getElementById('match-screen');
+        html2canvas(el, { scale: 2 }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'waiting-screen.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+
+    // Initialization
+    update();
+</script>
+
+</body>
+</html>

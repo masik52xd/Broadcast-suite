@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics Studio ULTIMATE</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent: #bc13fe; --neon: #00f2ff; --decider: #facc15; --bg: #0a0518; }
+        body { font-family: 'Rajdhani', sans-serif; background: #0f172a; color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+
+        /* ADMIN PANEL */
+        .controls { width: 420px; background: #1e293b; padding: 20px; overflow-y: auto; border-right: 3px solid var(--accent); z-index: 10; }
+        h2, h3 { color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 0; }
+        .input-group { margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
+        label { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
+        
+        .stat-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        input[type="range"] { flex-grow: 1; }
+        input[type="number"], input[type="text"], select { 
+            background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 4px; 
+        }
+        input[type="number"] { width: 60px; text-align: center; font-weight: bold; color: var(--neon); }
+
+        button { background: var(--accent); color: white; font-weight: bold; cursor: pointer; border: none; padding: 10px; border-radius: 6px; width: 100%; transition: 0.2s; }
+        button:hover { filter: brightness(1.2); }
+        .btn-delete { background: #ef4444; width: auto; padding: 5px 10px; font-size: 12px; }
+        .btn-add { background: #10b981; margin-top: 5px; }
+
+        /* Map list in admin */
+        .admin-map-list { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+        .admin-map-item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 5px 10px; border-radius: 4px; font-size: 13px; }
+
+        /* PREVIEW */
+        .preview-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: auto; }
+        #export-screen {
+            width: 1280px; height: 720px;
+            background: linear-gradient(135deg, #0a0518 0%, #1e0b3d 100%);
+            position: relative; display: flex; flex-direction: column; align-items: center; padding: 40px; box-sizing: border-box;
+        }
+
+        .teams-header { display: flex; align-items: center; gap: 40px; margin-bottom: 30px; }
+        .team-info { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 250px; }
+        .main-logo { width: 120px; height: 120px; object-fit: contain; }
+        .team-n { font-family: 'Orbitron'; font-size: 32px; font-weight: 900; text-transform: uppercase; }
+        .vs { font-size: 48px; font-weight: 900; color: var(--accent); opacity: 0.5; }
+
+        .veto-grid { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; justify-content: center; }
+        .map-card {
+            width: 150px; height: 210px; background: #111; border: 2px solid #333;
+            border-radius: 10px; position: relative; overflow: hidden; cursor: pointer;
+        }
+        .map-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.4; }
+        .map-name { position: absolute; bottom: 10px; width: 100%; text-align: center; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px black; }
+        .badge { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 900; display: none; }
+
+        .map-card.ban { border-color: #ef4444; }
+        .map-card.ban .map-img { filter: grayscale(1) brightness(0.2); }
+        .map-card.ban .badge { display: block; background: #ef4444; }
+
+        .map-card.pick { border-color: #22c55e; }
+        .map-card.pick .map-img { opacity: 1; }
+        .map-card.pick .badge { display: block; background: #22c55e; }
+
+        .map-card.decider { border-color: var(--decider); }
+        .map-card.decider .badge { display: block; background: var(--decider); color: black; }
+
+        .stats-block { width: 90%; display: flex; flex-direction: column; gap: 15px; }
+        .stat-row { display: flex; align-items: center; gap: 20px; }
+        .mini-logo { width: 35px; height: 35px; object-fit: contain; }
+        .bar-container { flex-grow: 1; height: 30px; background: rgba(255,255,255,0.05); border-radius: 15px; overflow: hidden; display: flex; border: 1px solid #334155; }
+        .bar-fill { height: 100%; transition: 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+        .stat-label { min-width: 120px; text-align: center; font-weight: bold; color: var(--neon); letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h2>🏆 ANALYTICS PRO</h2>
+    
+    <div class="input-group">
+        <label>Team 1</label>
+        <input type="text" id="in-t1-n" value="NAVI" oninput="update()">
+        <input type="file" onchange="loadTeamLogo(event, 1)">
+    </div>
+
+    <div class="input-group">
+        <label>Team 2</label>
+        <input type="text" id="in-t2-n" value="FAZE" oninput="update()">
+        <input type="file" onchange="loadTeamLogo(event, 2)">
+    </div>
+
+    <div class="input-group">
+        <label>📊 Statistics (%)</label>
+        
+        <label>Winrate</label>
+        <div class="stat-input-row">
+            <input type="range" id="s1" min="0" max="100" value="65" oninput="syncStats(1, 'slider')">
+            <input type="number" id="v1" value="65" min="0" max="100" oninput="syncStats(1, 'number')">
+        </div>
+
+        <label>Map Pool</label>
+        <div class="stat-input-row">
+            <input type="range" id="s2" min="0" max="100" value="40" oninput="syncStats(2, 'slider')">
+            <input type="number" id="v2" value="40" min="0" max="100" oninput="syncStats(2, 'number')">
+        </div>
+
+        <label>Win Probability</label>
+        <div class="stat-input-row">
+            <input type="range" id="s3" min="0" max="100" value="55" oninput="syncStats(3, 'slider')">
+            <input type="number" id="v3" value="55" min="0" max="100" oninput="syncStats(3, 'number')">
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>🗺️ Map Management</label>
+        <div style="display: flex; gap: 5px;">
+            <input type="text" id="new-map-name" placeholder="Name">
+            <input type="file" id="new-map-file" style="display:none">
+            <button onclick="document.getElementById('new-map-file').click()" style="background:#475569; font-size:12px; width:auto">📁 Photo</button>
+        </div>
+        <button class="btn-add" onclick="addNewMap()">Add Map</button>
+        
+        <div class="admin-map-list" id="admin-map-list">
+            <!-- Map list for deletion here -->
+        </div>
+    </div>
+
+    <button onclick="savePNG()">Save PNG</button>
+</div>
+
+<div class="preview-area">
+    <div id="export-screen">
+        <div class="teams-header">
+            <div class="team-info">
+                <img src="https://via.placeholder.com/150" id="logo-t1" class="main-logo">
+                <div class="team-n" id="out-t1-n">NAVI</div>
+            </div>
+            <div class="vs">VS</div>
+            <div class="team-info">
+                <img src="https://via.placeholder.com/150" id="logo-t2" class="main-logo">
+                <div class="team-n" id="out-t2-n">FAZE</div>
+            </div>
+        </div>
+
+        <div class="veto-grid" id="map-container"></div>
+
+        <div class="stats-block">
+            <div class="stat-row">
+                <img src="https://via.placeholder.com/150" id="mini-t1-1" class="mini-logo">
+                <div class="bar-container">
+                    <div id="b1-l" class="bar-fill" style="background: var(--accent);"></div>
+                    <div id="b1-r" class="bar-fill" style="background: #334155;"></div>
+                </div>
+                <div class="stat-label">WINRATE</div>
+                <img src="https://via.placeholder.com/150" id="mini-t2-1" class="mini-logo">
+            </div>
+            <div class="stat-row">
+                <img src="https://via.placeholder.com/150" id="mini-t1-2" class="mini-logo">
+                <div class="bar-container">
+                    <div id="b2-l" class="bar-fill" style="background: var(--accent);"></div>
+                    <div id="b2-r" class="bar-fill" style="background: #334155;"></div>
+                </div>
+                <div class="stat-label">MAP POOL</div>
+                <img src="https://via.placeholder.com/150" id="mini-t2-2" class="mini-logo">
+            </div>
+            <div class="stat-row">
+                <img src="https://via.placeholder.com/150" id="mini-t1-3" class="mini-logo">
+                <div class="bar-container">
+                    <div id="b3-l" class="bar-fill" style="background: var(--accent);"></div>
+                    <div id="b3-r" class="bar-fill" style="background: #334155;"></div>
+                </div>
+                <div class="stat-label">WIN PROB.</div>
+                <img src="https://via.placeholder.com/150" id="mini-t2-3" class="mini-logo">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let maps = [
+        { id: 1, name: 'ANUBIS', url: 'https://img.redbull.com/images/c_limit,w_1500,h_1000,f_auto,q_auto/redbullcom/2022/12/12/fdt6l3j7kym68ix6fscq/anubis-csgo' },
+        { id: 2, name: 'MIRAGE', url: 'https://i.redd.it/0q1f0d0y1y971.jpg' },
+        { id: 3, name: 'INFERNO', url: 'https://Oyster.ignimgs.com/mediawiki/apis.ign.com/counter-strike-go/d/d4/Inferno_image.jpg' }
+    ];
+
+    function syncStats(id, source) {
+        const slider = document.getElementById(`s${id}`);
+        const number = document.getElementById(`v${id}`);
+        
+        if (source === 'slider') {
+            number.value = slider.value;
+        } else {
+            if (number.value > 100) number.value = 100;
+            if (number.value < 0) number.value = 0;
+            slider.value = number.value;
+        }
+        update();
+    }
+
+    function update() {
+        document.getElementById('out-t1-n').innerText = document.getElementById('in-t1-n').value;
+        document.getElementById('out-t2-n').innerText = document.getElementById('in-t2-n').value;
+
+        for(let i=1; i<=3; i++) {
+            const val = document.getElementById(`s${i}`).value;
+            document.getElementById(`b${i}-l`).style.width = val + '%';
+            document.getElementById(`b${i}-r`).style.width = (100 - val) + '%';
+        }
+    }
+
+    function loadTeamLogo(event, teamNum) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const data = reader.result;
+            document.getElementById(`logo-t${teamNum}`).src = data;
+            for(let i=1; i<=3; i++) document.getElementById(`mini-t${teamNum}-${i}`).src = data;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function renderAll() {
+        // Render cards on screen
+        const container = document.getElementById('map-container');
+        container.innerHTML = '';
+        maps.forEach(map => {
+            const card = document.createElement('div');
+            card.className = 'map-card';
+            card.innerHTML = `<img src="${map.url}" class="map-img"><div class="badge">BAN</div><div class="map-name">${map.name}</div>`;
+            card.onclick = () => {
+                if (card.classList.contains('ban')) { card.classList.replace('ban', 'pick'); card.querySelector('.badge').innerText = 'PICK'; }
+                else if (card.classList.contains('pick')) { card.classList.replace('pick', 'decider'); card.querySelector('.badge').innerText = 'DECIDER'; }
+                else if (card.classList.contains('decider')) { card.classList.remove('decider'); }
+                else { card.classList.add('ban'); card.querySelector('.badge').innerText = 'BAN'; }
+            };
+            container.appendChild(card);
+        });
+
+        // Render list in admin
+        const adminList = document.getElementById('admin-map-list');
+        adminList.innerHTML = '';
+        maps.forEach(map => {
+            const item = document.createElement('div');
+            item.className = 'admin-map-item';
+            item.innerHTML = `<span>${map.name}</span> <button class="btn-delete" onclick="removeMap(${map.id})">🗑️</button>`;
+            adminList.appendChild(item);
+        });
+    }
+
+    function addNewMap() {
+        const name = document.getElementById('new-map-name').value;
+        const file = document.getElementById('new-map-file').files[0];
+        if (!name || !file) return alert("Please enter a name and select a photo!");
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            maps.push({ id: Date.now(), name: name.toUpperCase(), url: reader.result });
+            document.getElementById('new-map-name').value = '';
+            renderAll();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeMap(id) {
+        maps = maps.filter(m => m.id !== id);
+        renderAll();
+    }
+
+    function savePNG() {
+        html2canvas(document.getElementById('export-screen'), { scale: 1.5 }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'analytics-hype.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+
+    renderAll();
+    update();
+</script>
+
+</body>
+</html>
