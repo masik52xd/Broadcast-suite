@@ -2,230 +2,255 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Multi-Game Match Result Generator</title>
+    <title>Match Results Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #bc13fe;
-            --bg-dark: #0a0518;
-            --neon-blue: #00f2ff;
+            --c1: #bc13fe;
+            --c2: #00f2ff;
+            --bg: #060612;
+            --surface: #0d0d1f;
+            --border: #1e1e3f;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --grad-a: #0f0524;
+            --grad-b: #2b0b4d;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
         body {
             font-family: 'Rajdhani', sans-serif;
-            background-color: #0f172a;
-            color: white;
+            background: var(--bg);
+            color: var(--text);
             display: flex;
-            margin: 0;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Controls Panel */
-        .controls {
-            width: 380px;
-            background: #1e293b;
-            padding: 20px;
+        /* ─── SIDEBAR ─── */
+        .sidebar {
+            width: 360px;
+            min-width: 360px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
             overflow-y: auto;
-            border-right: 3px solid var(--accent);
-            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
-        }
-
-        .input-group { margin-bottom: 12px; }
-        label { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; font-weight: bold; }
-        input, select {
-            width: 100%;
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .download-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(45deg, #bc13fe, #7a12f5);
-            border: none;
-            color: white;
-            font-weight: 900;
-            cursor: pointer;
-            border-radius: 8px;
-            text-transform: uppercase;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(188, 19, 254, 0.4);
-        }
-
-        /* Preview Area */
-        .preview-area {
-            flex-grow: 1;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #0a0a0a;
-            overflow: auto;
-            padding: 40px;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-header h1 { font-family: 'Orbitron'; font-size: 0.9rem; font-weight: 900; background: linear-gradient(135deg, var(--c1), var(--c2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
+
+        .sidebar-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+        .field-group label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 6px; }
+        input[type="text"], select {
+            width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+            padding: 9px 12px; border-radius: 6px; font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600; transition: 0.2s;
+        }
+        input[type="text"]:focus, select:focus { outline: none; border-color: var(--c1); }
+
+        .row { display: flex; gap: 10px; }
+        .row > * { flex: 1; }
+
+        .color-section { display: flex; flex-direction: column; gap: 8px; }
+        .color-row { display: flex; gap: 8px; }
+        .color-field { flex: 1; }
+        .color-field label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px; }
+        .color-input-wrap { display: flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; }
+        .color-input-wrap input[type="color"] { width: 22px; height: 22px; border: none; background: none; cursor: pointer; border-radius: 3px; padding: 0; }
+        .color-input-wrap input[type="text"] { border: none; background: none; padding: 0; font-size: 11px; color: var(--text); width: 65px; font-family: 'Rajdhani'; font-weight: 600; }
+        .color-input-wrap input[type="text"]:focus { outline: none; border: none; }
+
+        .file-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px; }
+        input[type="file"] { font-size: 11px; color: var(--muted); cursor: pointer; }
+
+        .divider { height: 1px; background: var(--border); }
+
+        .btn {
+            padding: 13px 16px; border: none; border-radius: 6px; cursor: pointer;
+            font-family: 'Orbitron'; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; transition: 0.2s; width: 100%;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--c1), #7a12f5); color: white; box-shadow: 0 4px 20px rgba(188,19,254,0.3); }
+        .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+        /* ─── PREVIEW ─── */
+        .preview-area {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background: #000; overflow: auto; padding: 20px;
         }
 
         #graphic-export {
-            width: 1080px;
-            height: 1080px;
-            background: linear-gradient(135deg, #0f0524 0%, #2b0b4d 50%, #0f0524 100%);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 80px 40px;
-            box-sizing: border-box;
-            box-shadow: 0 0 100px rgba(0,0,0,1);
+            width: 1080px; height: 1080px;
+            position: relative; display: flex; flex-direction: column; align-items: center;
+            padding: 80px 40px; box-sizing: border-box;
+            box-shadow: 0 0 80px rgba(0,0,0,1);
+            background: linear-gradient(135deg, var(--grad-a) 0%, var(--grad-b) 50%, var(--grad-a) 100%);
+            flex-shrink: 0;
         }
 
-        .tournament-name { 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 72px; 
-            font-weight: 900; 
-            text-align: center;
-            margin: 0;
-            background: linear-gradient(to bottom, #fff 40%, #bc13fe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
+        /* Decorative corners */
+        #graphic-export::before, #graphic-export::after {
+            content: '';
+            position: absolute;
+            width: 60px; height: 60px;
+            border-color: var(--c1);
+            border-style: solid;
+            opacity: 0.4;
         }
+        #graphic-export::before { top: 30px; left: 30px; border-width: 2px 0 0 2px; }
+        #graphic-export::after { bottom: 30px; right: 30px; border-width: 0 2px 2px 0; }
 
-        .sub-header { font-size: 36px; color: #cbd5e1; margin-top: 15px; letter-spacing: 4px; }
-
-        .teams-main {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 50px;
-            margin: 80px 0;
-            width: 100%;
+        .tournament-name {
+            font-family: 'Orbitron'; font-size: 64px; font-weight: 900; text-align: center;
+            margin: 0; background: linear-gradient(to bottom, #fff 40%, var(--c1));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;
         }
+        .sub-header { font-size: 30px; color: #cbd5e1; margin-top: 12px; letter-spacing: 6px; }
+
+        .teams-main { display: flex; align-items: center; justify-content: center; gap: 40px; margin: 70px 0; width: 100%; }
 
         .team-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(188, 19, 254, 0.2);
-            padding: 30px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            min-width: 320px;
-            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(188,19,254,0.2);
+            padding: 28px 32px; border-radius: 16px; display: flex; align-items: center; gap: 22px;
+            min-width: 300px; backdrop-filter: blur(10px);
         }
 
-        .team-logo { width: 140px; height: 140px; object-fit: contain; }
-        .team-name { font-size: 54px; font-weight: 700; text-transform: uppercase; }
+        .team-logo { width: 130px; height: 130px; object-fit: contain; }
+        .team-name { font-size: 50px; font-weight: 700; text-transform: uppercase; font-family: 'Orbitron'; letter-spacing: -1px; }
 
         .score-display {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 130px;
-            font-weight: 900;
-            text-shadow: 0 0 30px rgba(188, 19, 254, 0.8);
+            font-family: 'Orbitron'; font-size: 120px; font-weight: 900;
+            text-shadow: 0 0 40px var(--c1); color: white;
         }
 
-        .maps-grid {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            width: 100%;
-            flex-wrap: wrap;
-        }
+        .maps-grid { display: flex; justify-content: center; gap: 18px; width: 100%; flex-wrap: wrap; }
 
         .map-box {
-            background: rgba(0, 0, 0, 0.4);
-            border-top: 5px solid var(--accent);
-            padding: 20px;
-            min-width: 180px;
-            text-align: center;
-            border-radius: 0 0 12px 12px;
-            transition: 0.3s;
+            background: rgba(0,0,0,0.4); border-top: 4px solid var(--c1);
+            padding: 18px 20px; min-width: 170px; text-align: center;
+            border-radius: 0 0 10px 10px;
         }
 
-        .map-n { color: var(--neon-blue); font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; }
-        .map-s { font-size: 42px; font-weight: 700; font-family: 'Orbitron'; }
+        .map-n { color: var(--c2); font-size: 20px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 2px; }
+        .map-s { font-size: 40px; font-weight: 700; font-family: 'Orbitron'; }
 
-        .footer {
-            position: absolute;
-            bottom: 60px;
-            text-align: center;
-        }
-
-        .watermark { 
-            font-family: 'Orbitron'; 
-            font-size: 32px; 
-            letter-spacing: 6px; 
-            border-top: 1px solid rgba(255,255,255,0.2);
-            padding-top: 15px;
-            color: #f8fafc;
-        }
-        .game-name { font-size: 20px; color: var(--accent); margin-top: 8px; font-weight: bold; text-transform: uppercase; }
+        .footer { position: absolute; bottom: 60px; text-align: center; }
+        .watermark { font-family: 'Orbitron'; font-size: 28px; letter-spacing: 6px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 14px; color: #f8fafc; }
+        .game-name { font-size: 18px; color: var(--c1); margin-top: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; }
     </style>
 </head>
 <body>
 
-<div class="controls">
-    <h2 style="color: var(--accent)">⚙️ GENERATOR</h2>
-    
-    <div class="input-group">
-        <label>Tournament</label>
-        <input type="text" id="in-tour" value="BSL OPEN CUP 2025" oninput="update()">
-    </div>
+<div class="sidebar">
+    <div class="sidebar-header"><h1>RESULTS GENERATOR</h1></div>
+    <div class="sidebar-body">
 
-    <div class="input-group">
-        <label>Date / Format</label>
-        <input type="text" id="in-date" value="21.01.2026 | BO3" oninput="update()">
-    </div>
-
-    <div class="input-group">
-        <label>Map Count (Format)</label>
-        <select id="in-format" onchange="changeFormat()">
-            <option value="1">BO1</option>
-            <option value="2">BO2</option>
-            <option value="3" selected>BO3</option>
-            <option value="5">BO5</option>
-        </select>
-    </div>
-
-    <div style="display:flex; gap:10px">
-        <div class="input-group">
-            <label>Team 1</label>
-            <input type="text" id="in-t1" value="SMFIX" oninput="update()">
-            <input type="file" onchange="loadLogo(event, 'logo1')" style="margin-top:5px; font-size:10px">
+        <div class="field-group">
+            <label>Tournament</label>
+            <input type="text" id="in-tour" value="BSL OPEN CUP 2025" oninput="update()">
         </div>
-        <div class="input-group">
-            <label>Team 2</label>
-            <input type="text" id="in-t2" value="TRUE." oninput="update()">
-            <input type="file" onchange="loadLogo(event, 'logo2')" style="margin-top:5px; font-size:10px">
+
+        <div class="field-group">
+            <label>Date / Format</label>
+            <input type="text" id="in-date" value="21.01.2026 | BO3" oninput="update()">
         </div>
-    </div>
 
-    <div class="input-group">
-        <label>Total Score (e.g. 2:0)</label>
-        <input type="text" id="in-score" value="2:0" oninput="update()">
-    </div>
+        <div class="field-group">
+            <label>Map Count</label>
+            <select id="in-format" onchange="changeFormat()">
+                <option value="1">BO1</option>
+                <option value="2">BO2</option>
+                <option value="3" selected>BO3</option>
+                <option value="5">BO5</option>
+            </select>
+        </div>
 
-    <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
-    
-    <div id="maps-inputs-container">
-        <!-- JS will add map fields here -->
-    </div>
+        <div class="divider"></div>
 
-    <div class="input-group" style="margin-top:20px">
-        <label>Game</label>
-        <input type="text" id="in-game" value="Counter-Strike 2" oninput="update()">
-    </div>
+        <div class="row">
+            <div class="field-group">
+                <label>Team 1</label>
+                <input type="text" id="in-t1" value="TEAM NAME" oninput="update()">
+                <div class="file-label" style="margin-top:6px">Logo</div>
+                <input type="file" onchange="loadLogo(event, 'logo1')">
+            </div>
+            <div class="field-group">
+                <label>Team 2</label>
+                <input type="text" id="in-t2" value="TEAM NAME" oninput="update()">
+                <div class="file-label" style="margin-top:6px">Logo</div>
+                <input type="file" onchange="loadLogo(event, 'logo2')">
+            </div>
+        </div>
 
-    <div class="input-group">
-        <label>Your Watermark</label>
-        <input type="text" id="in-mark" value="HEADSHOT GENERATOR" oninput="update()">
-    </div>
+        <div class="field-group">
+            <label>Score (e.g. 2:1)</label>
+            <input type="text" id="in-score" value="2:1" oninput="update()">
+        </div>
 
-    <button class="download-btn" onclick="saveImage()">Save as PNG</button>
+        <div class="divider"></div>
+
+        <div id="maps-inputs-container"></div>
+
+        <div class="field-group">
+            <label>Game</label>
+            <input type="text" id="in-game" value="Counter-Strike 2" oninput="update()">
+        </div>
+
+        <div class="field-group">
+            <label>Watermark</label>
+            <input type="text" id="in-mark" value="BROADCAST SUITE" oninput="update()">
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Color pickers -->
+        <div class="field-group">
+            <label>Theme Colors</label>
+            <div class="color-section">
+                <div class="color-row">
+                    <div class="color-field">
+                        <label>Accent</label>
+                        <div class="color-input-wrap">
+                            <input type="color" id="cp-c1" value="#bc13fe" oninput="syncColor('c1',this.value)">
+                            <input type="text" id="ct-c1" value="#bc13fe" oninput="syncColorText('c1',this.value)">
+                        </div>
+                    </div>
+                    <div class="color-field">
+                        <label>Highlight</label>
+                        <div class="color-input-wrap">
+                            <input type="color" id="cp-c2" value="#00f2ff" oninput="syncColor('c2',this.value)">
+                            <input type="text" id="ct-c2" value="#00f2ff" oninput="syncColorText('c2',this.value)">
+                        </div>
+                    </div>
+                </div>
+                <div class="color-row">
+                    <div class="color-field">
+                        <label>BG Start</label>
+                        <div class="color-input-wrap">
+                            <input type="color" id="cp-ga" value="#0f0524" oninput="syncGradient('grad-a',this.value)">
+                            <input type="text" id="ct-ga" value="#0f0524" oninput="syncGradientText('grad-a',this.value,'ct-ga','cp-ga')">
+                        </div>
+                    </div>
+                    <div class="color-field">
+                        <label>BG Mid</label>
+                        <div class="color-input-wrap">
+                            <input type="color" id="cp-gb" value="#2b0b4d" oninput="syncGradient('grad-b',this.value)">
+                            <input type="text" id="ct-gb" value="#2b0b4d" oninput="syncGradientText('grad-b',this.value,'ct-gb','cp-gb')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveImage()">Save as PNG</button>
+    </div>
 </div>
 
 <div class="preview-area">
@@ -235,24 +260,20 @@
 
         <div class="teams-main">
             <div class="team-card">
-                <span class="team-name" id="out-t1">SMFIX</span>
-                <img src="https://via.placeholder.com/150" id="logo1" class="team-logo">
+                <span class="team-name" id="out-t1">TEAM NAME</span>
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23111'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23333' font-size='14' font-family='sans-serif'%3ELOGO%3C/text%3E%3C/svg%3E" id="logo1" class="team-logo">
             </div>
-
-            <div class="score-display" id="out-score">2:0</div>
-
+            <div class="score-display" id="out-score">2:1</div>
             <div class="team-card">
-                <img src="https://via.placeholder.com/150" id="logo2" class="team-logo">
-                <span class="team-name" id="out-t2">TRUE.</span>
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23111'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23333' font-size='14' font-family='sans-serif'%3ELOGO%3C/text%3E%3C/svg%3E" id="logo2" class="team-logo">
+                <span class="team-name" id="out-t2">TEAM NAME</span>
             </div>
         </div>
 
-        <div class="maps-grid" id="out-maps-container">
-            <!-- Maps will appear here -->
-        </div>
+        <div class="maps-grid" id="out-maps-container"></div>
 
         <div class="footer">
-            <div class="watermark" id="out-mark">HEADSHOT GENERATOR</div>
+            <div class="watermark" id="out-mark">BROADCAST SUITE</div>
             <div class="game-name" id="out-game">COUNTER-STRIKE 2</div>
         </div>
     </div>
@@ -261,50 +282,75 @@
 <script>
     const defaultMaps = ["ANUBIS", "DUST 2", "MIRAGE", "INFERNO", "NUKE"];
 
+    function syncColor(varName, hex) {
+        document.documentElement.style.setProperty('--' + varName, hex);
+        document.getElementById('ct-' + varName).value = hex;
+    }
+    function syncColorText(varName, val) {
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+            document.documentElement.style.setProperty('--' + varName, val);
+            document.getElementById('cp-' + varName).value = val;
+        }
+    }
+    function syncGradient(varName, hex) {
+        document.documentElement.style.setProperty('--' + varName, hex);
+        const tId = varName === 'grad-a' ? 'ct-ga' : 'ct-gb';
+        document.getElementById(tId).value = hex;
+        updateGradient();
+    }
+    function syncGradientText(varName, val, tId, pId) {
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+            document.documentElement.style.setProperty('--' + varName, val);
+            document.getElementById(pId).value = val;
+            updateGradient();
+        }
+    }
+    function updateGradient() {
+        const ga = document.getElementById('cp-ga').value;
+        const gb = document.getElementById('cp-gb').value;
+        document.getElementById('graphic-export').style.background = `linear-gradient(135deg, ${ga} 0%, ${gb} 50%, ${ga} 100%)`;
+    }
+
     function changeFormat() {
         const count = parseInt(document.getElementById('in-format').value);
-        const inputArea = document.getElementById('maps-inputs-container');
-        inputArea.innerHTML = '<h3>Map Results</h3>';
+        const area = document.getElementById('maps-inputs-container');
+        area.innerHTML = `<div class="field-group"><label>Map Results</label></div>`;
 
         for (let i = 1; i <= count; i++) {
-            inputArea.innerHTML += `
-                <div class="input-group" style="display:flex; gap:5px">
-                    <input type="text" id="in-m${i}-n" value="${defaultMaps[i-1] || 'MAP '+i}" oninput="update()" placeholder="Map">
-                    <input type="text" id="in-m${i}-s" value="-" oninput="update()" placeholder="Score" style="width:70px">
-                </div>
+            const row = document.createElement('div');
+            row.className = 'row';
+            row.style.marginBottom = '8px';
+            row.innerHTML = `
+                <input type="text" id="in-m${i}-n" value="${defaultMaps[i-1] || 'MAP '+i}" oninput="update()" placeholder="Map name" style="font-size:13px">
+                <input type="text" id="in-m${i}-s" value="-" oninput="update()" placeholder="Score" style="max-width:70px; font-size:13px; text-align:center">
             `;
+            area.appendChild(row);
         }
         update();
     }
 
     function update() {
-        // Base texts
         document.getElementById('out-tour').innerText = document.getElementById('in-tour').value;
         document.getElementById('out-date').innerText = document.getElementById('in-date').value;
         document.getElementById('out-t1').innerText = document.getElementById('in-t1').value;
         document.getElementById('out-t2').innerText = document.getElementById('in-t2').value;
         document.getElementById('out-score').innerText = document.getElementById('in-score').value;
-        document.getElementById('out-game').innerText = document.getElementById('in-game').value;
+        document.getElementById('out-game').innerText = document.getElementById('in-game').value.toUpperCase();
         document.getElementById('out-mark').innerText = document.getElementById('in-mark').value;
 
-        // Update maps in preview
         const count = parseInt(document.getElementById('in-format').value);
         const outContainer = document.getElementById('out-maps-container');
         outContainer.innerHTML = '';
 
         for (let i = 1; i <= count; i++) {
-            const mName = document.getElementById(`in-m${i}-n`).value;
-            const mScore = document.getElementById(`in-m${i}-s`).value;
-            
+            const mName = document.getElementById(`in-m${i}-n`)?.value || '';
+            const mScore = document.getElementById(`in-m${i}-s`)?.value || '-';
+
             const card = document.createElement('div');
             card.className = 'map-box';
-            // If more than 3 maps, reduce font size slightly
-            if (count > 3) card.style.minWidth = '160px';
-            
-            card.innerHTML = `
-                <div class="map-n">${mName}</div>
-                <div class="map-s">${mScore}</div>
-            `;
+            if (count > 3) card.style.minWidth = '145px';
+
+            card.innerHTML = `<div class="map-n">${mName}</div><div class="map-s">${mScore}</div>`;
             outContainer.appendChild(card);
         }
     }
@@ -317,17 +363,15 @@
 
     function saveImage() {
         const el = document.getElementById('graphic-export');
-        html2canvas(el, { scale: 2 }).then(canvas => {
+        html2canvas(el, { scale: 2, useCORS: true }).then(canvas => {
             const link = document.createElement('a');
-            link.download = 'match-result-pro.png';
+            link.download = 'match-result.png';
             link.href = canvas.toDataURL();
             link.click();
         });
     }
 
-    // Initialization
     changeFormat();
 </script>
-
 </body>
 </html>

@@ -2,144 +2,218 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Analytics Studio ULTIMATE</title>
+    <title>Analytics Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #bc13fe; --neon: #00f2ff; --decider: #facc15; --bg: #0a0518; }
-        body { font-family: 'Rajdhani', sans-serif; background: #0f172a; color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-
-        /* ADMIN PANEL */
-        .controls { width: 420px; background: #1e293b; padding: 20px; overflow-y: auto; border-right: 3px solid var(--accent); z-index: 10; }
-        h2, h3 { color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 0; }
-        .input-group { margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
-        label { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
-        
-        .stat-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        input[type="range"] { flex-grow: 1; }
-        input[type="number"], input[type="text"], select { 
-            background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 4px; 
+        :root {
+            --c1: #bc13fe;
+            --c2: #00f2ff;
+            --decider: #facc15;
+            --bg: #060612;
+            --surface: #0d0d1f;
+            --border: #1e1e3f;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --grad-a: #0a0518;
+            --grad-b: #1e0b3d;
         }
-        input[type="number"] { width: 60px; text-align: center; font-weight: bold; color: var(--neon); }
 
-        button { background: var(--accent); color: white; font-weight: bold; cursor: pointer; border: none; padding: 10px; border-radius: 6px; width: 100%; transition: 0.2s; }
-        button:hover { filter: brightness(1.2); }
-        .btn-delete { background: #ef4444; width: auto; padding: 5px 10px; font-size: 12px; }
-        .btn-add { background: #10b981; margin-top: 5px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        /* Map list in admin */
-        .admin-map-list { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
-        .admin-map-item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 5px 10px; border-radius: 4px; font-size: 13px; }
+        body { font-family: 'Rajdhani', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
-        /* PREVIEW */
-        .preview-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: auto; }
+        /* ─── SIDEBAR ─── */
+        .sidebar { width: 380px; min-width: 380px; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; }
+        .sidebar-header { padding: 22px 20px 14px; border-bottom: 1px solid var(--border); }
+        .sidebar-header h1 { font-family: 'Orbitron'; font-size: 0.9rem; font-weight: 900; background: linear-gradient(135deg, var(--c1), var(--c2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
+        .sidebar-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+        .field-group label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 6px; }
+        input[type="text"], select {
+            width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+            padding: 9px 12px; border-radius: 6px; font-family: 'Rajdhani'; font-size: 14px; font-weight: 600; transition: 0.2s;
+        }
+        input[type="text"]:focus, select:focus { outline: none; border-color: var(--c1); }
+
+        .stat-row-ctrl { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        input[type="range"] { flex-grow: 1; accent-color: var(--c1); }
+        input[type="number"] { width: 58px; background: var(--bg); border: 1px solid var(--border); color: var(--c2); padding: 6px 8px; border-radius: 4px; text-align: center; font-weight: 700; font-size: 14px; font-family: 'Rajdhani'; }
+
+        .map-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 600; }
+        .btn-del { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .btn-del:hover { background: #ef4444; color: white; }
+
+        .btn { padding: 12px 16px; border: none; border-radius: 6px; cursor: pointer; font-family: 'Orbitron'; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; transition: 0.2s; width: 100%; }
+        .btn-primary { background: linear-gradient(135deg, var(--c1), #7a12f5); color: white; box-shadow: 0 4px 20px rgba(188,19,254,0.3); }
+        .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+        .btn-green { background: #10b981; color: white; width: auto; padding: 8px 14px; border-radius: 6px; font-family: 'Rajdhani'; font-weight: 700; font-size: 13px; margin-top: 6px; }
+
+        .color-row { display: flex; gap: 8px; }
+        .color-field { flex: 1; }
+        .color-field label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px; }
+        .color-input-wrap { display: flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; }
+        .color-input-wrap input[type="color"] { width: 22px; height: 22px; border: none; background: none; cursor: pointer; border-radius: 3px; padding: 0; }
+        .color-input-wrap input[type="text"] { border: none; background: none; padding: 0; font-size: 11px; color: var(--text); width: 62px; font-family: 'Rajdhani'; font-weight: 600; }
+        .color-input-wrap input[type="text"]:focus { outline: none; }
+
+        input[type="file"] { font-size: 11px; color: var(--muted); cursor: pointer; margin-top: 4px; }
+        .divider { height: 1px; background: var(--border); }
+
+        /* ─── PREVIEW ─── */
+        .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: auto; }
+
         #export-screen {
-            width: 1280px; height: 720px;
-            background: linear-gradient(135deg, #0a0518 0%, #1e0b3d 100%);
-            position: relative; display: flex; flex-direction: column; align-items: center; padding: 40px; box-sizing: border-box;
+            width: 1280px; height: 720px; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--grad-a) 0%, var(--grad-b) 100%);
+            position: relative; display: flex; flex-direction: column; align-items: center; padding: 36px 40px; box-sizing: border-box;
         }
 
-        .teams-header { display: flex; align-items: center; gap: 40px; margin-bottom: 30px; }
-        .team-info { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 250px; }
-        .main-logo { width: 120px; height: 120px; object-fit: contain; }
-        .team-n { font-family: 'Orbitron'; font-size: 32px; font-weight: 900; text-transform: uppercase; }
-        .vs { font-size: 48px; font-weight: 900; color: var(--accent); opacity: 0.5; }
+        .teams-header { display: flex; align-items: center; gap: 40px; margin-bottom: 24px; }
+        .team-info { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 220px; }
+        .main-logo { width: 100px; height: 100px; object-fit: contain; }
+        .team-n { font-family: 'Orbitron'; font-size: 28px; font-weight: 900; text-transform: uppercase; text-align: center; }
+        .vs-txt { font-size: 42px; font-weight: 900; color: var(--c1); opacity: 0.5; font-family: 'Orbitron'; }
 
-        .veto-grid { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; justify-content: center; }
+        .veto-grid { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; justify-content: center; }
         .map-card {
-            width: 150px; height: 210px; background: #111; border: 2px solid #333;
-            border-radius: 10px; position: relative; overflow: hidden; cursor: pointer;
+            width: 130px; height: 190px; background: #111; border: 2px solid #333;
+            border-radius: 8px; position: relative; overflow: hidden; cursor: pointer;
+            transition: border-color 0.2s;
         }
-        .map-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.4; }
-        .map-name { position: absolute; bottom: 10px; width: 100%; text-align: center; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px black; }
-        .badge { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 900; display: none; }
+        .map-card:hover { border-color: #555; }
+        .map-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.4; transition: opacity 0.2s; }
+        .map-name { position: absolute; bottom: 8px; width: 100%; text-align: center; font-weight: 700; font-size: 14px; text-shadow: 0 2px 4px black; letter-spacing: 1px; }
+        .badge { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); padding: 3px 10px; border-radius: 3px; font-size: 11px; font-weight: 900; display: none; white-space: nowrap; }
 
         .map-card.ban { border-color: #ef4444; }
         .map-card.ban .map-img { filter: grayscale(1) brightness(0.2); }
         .map-card.ban .badge { display: block; background: #ef4444; }
-
         .map-card.pick { border-color: #22c55e; }
         .map-card.pick .map-img { opacity: 1; }
         .map-card.pick .badge { display: block; background: #22c55e; }
-
         .map-card.decider { border-color: var(--decider); }
-        .map-card.decider .badge { display: block; background: var(--decider); color: black; }
+        .map-card.decider .badge { display: block; background: var(--decider); color: #000; }
 
-        .stats-block { width: 90%; display: flex; flex-direction: column; gap: 15px; }
-        .stat-row { display: flex; align-items: center; gap: 20px; }
-        .mini-logo { width: 35px; height: 35px; object-fit: contain; }
-        .bar-container { flex-grow: 1; height: 30px; background: rgba(255,255,255,0.05); border-radius: 15px; overflow: hidden; display: flex; border: 1px solid #334155; }
-        .bar-fill { height: 100%; transition: 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
-        .stat-label { min-width: 120px; text-align: center; font-weight: bold; color: var(--neon); letter-spacing: 2px; }
+        .stats-block { width: 90%; display: flex; flex-direction: column; gap: 14px; }
+        .stat-row { display: flex; align-items: center; gap: 16px; }
+        .mini-logo { width: 32px; height: 32px; object-fit: contain; }
+        .bar-container { flex-grow: 1; height: 28px; background: rgba(255,255,255,0.05); border-radius: 14px; overflow: hidden; display: flex; border: 1px solid #334155; }
+        .bar-fill { height: 100%; transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+        .stat-label { min-width: 110px; text-align: center; font-weight: 700; color: var(--c2); letter-spacing: 2px; font-size: 13px; }
     </style>
 </head>
 <body>
 
-<div class="controls">
-    <h2>🏆 ANALYTICS PRO</h2>
-    
-    <div class="input-group">
-        <label>Team 1</label>
-        <input type="text" id="in-t1-n" value="NAVI" oninput="update()">
-        <input type="file" onchange="loadTeamLogo(event, 1)">
+<div class="sidebar">
+    <div class="sidebar-header"><h1>ANALYTICS STUDIO</h1></div>
+    <div class="sidebar-body">
+
+        <div class="field-group">
+            <label>Team 1</label>
+            <input type="text" id="in-t1-n" value="TEAM NAME" oninput="update()">
+            <input type="file" onchange="loadTeamLogo(event,1)">
+        </div>
+
+        <div class="field-group">
+            <label>Team 2</label>
+            <input type="text" id="in-t2-n" value="TEAM NAME" oninput="update()">
+            <input type="file" onchange="loadTeamLogo(event,2)">
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field-group">
+            <label>Statistics</label>
+
+            <div style="font-size:11px; color:var(--muted); margin-bottom:4px">Winrate (Team 1 %)</div>
+            <div class="stat-row-ctrl">
+                <input type="range" id="s1" min="0" max="100" value="65" oninput="syncStats(1,'slider')">
+                <input type="number" id="v1" value="65" min="0" max="100" oninput="syncStats(1,'number')">
+            </div>
+
+            <div style="font-size:11px; color:var(--muted); margin-bottom:4px">Map Pool</div>
+            <div class="stat-row-ctrl">
+                <input type="range" id="s2" min="0" max="100" value="40" oninput="syncStats(2,'slider')">
+                <input type="number" id="v2" value="40" min="0" max="100" oninput="syncStats(2,'number')">
+            </div>
+
+            <div style="font-size:11px; color:var(--muted); margin-bottom:4px">Win Probability</div>
+            <div class="stat-row-ctrl">
+                <input type="range" id="s3" min="0" max="100" value="55" oninput="syncStats(3,'slider')">
+                <input type="number" id="v3" value="55" min="0" max="100" oninput="syncStats(3,'number')">
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field-group">
+            <label>Map Pool — click card to cycle Ban → Pick → Decider</label>
+            <div style="display:flex; gap:8px; align-items:center">
+                <input type="text" id="new-map-name" placeholder="Map name" style="flex:1">
+                <input type="file" id="new-map-file" style="display:none" onchange="previewMapFile()">
+                <button class="btn-green" onclick="document.getElementById('new-map-file').click()">📁</button>
+                <button class="btn-green" onclick="addNewMap()">Add</button>
+            </div>
+            <div id="admin-map-list" style="display:flex; flex-direction:column; gap:6px; margin-top:10px;"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field-group">
+            <label>Theme Colors</label>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <div class="color-row">
+                    <div class="color-field">
+                        <label>Accent</label>
+                        <div class="color-input-wrap">
+                            <input type="color" id="cp-c1" value="#bc13fe" oninput="syncColor('c1',this.value,'ct-c1')">
+                            <input type="text" id="ct-c1" value="#bc13fe" oninput="syncColorTxt('c1',this.value,'cp-c1')">
+                        </div>
+                    </div>
+                    <div class="color-field">
+                        <label>Highlight</label>
+                        <div class="color-input-wrap">
+                            <input type="color" id="cp-c2" value="#00f2ff" oninput="syncColor('c2',this.value,'ct-c2')">
+                            <input type="text" id="ct-c2" value="#00f2ff" oninput="syncColorTxt('c2',this.value,'cp-c2')">
+                        </div>
+                    </div>
+                </div>
+                <div class="color-row">
+                    <div class="color-field">
+                        <label>BG Dark</label>
+                        <div class="color-input-wrap">
+                            <input type="color" id="cp-ga" value="#0a0518" oninput="syncGrad('grad-a',this.value,'ct-ga')">
+                            <input type="text" id="ct-ga" value="#0a0518" oninput="syncGradTxt('grad-a',this.value,'cp-ga')">
+                        </div>
+                    </div>
+                    <div class="color-field">
+                        <label>BG Light</label>
+                        <div class="color-input-wrap">
+                            <input type="color" id="cp-gb" value="#1e0b3d" oninput="syncGrad('grad-b',this.value,'ct-gb')">
+                            <input type="text" id="ct-gb" value="#1e0b3d" oninput="syncGradTxt('grad-b',this.value,'cp-gb')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="savePNG()">Save PNG</button>
     </div>
-
-    <div class="input-group">
-        <label>Team 2</label>
-        <input type="text" id="in-t2-n" value="FAZE" oninput="update()">
-        <input type="file" onchange="loadTeamLogo(event, 2)">
-    </div>
-
-    <div class="input-group">
-        <label>📊 Statistics (%)</label>
-        
-        <label>Winrate</label>
-        <div class="stat-input-row">
-            <input type="range" id="s1" min="0" max="100" value="65" oninput="syncStats(1, 'slider')">
-            <input type="number" id="v1" value="65" min="0" max="100" oninput="syncStats(1, 'number')">
-        </div>
-
-        <label>Map Pool</label>
-        <div class="stat-input-row">
-            <input type="range" id="s2" min="0" max="100" value="40" oninput="syncStats(2, 'slider')">
-            <input type="number" id="v2" value="40" min="0" max="100" oninput="syncStats(2, 'number')">
-        </div>
-
-        <label>Win Probability</label>
-        <div class="stat-input-row">
-            <input type="range" id="s3" min="0" max="100" value="55" oninput="syncStats(3, 'slider')">
-            <input type="number" id="v3" value="55" min="0" max="100" oninput="syncStats(3, 'number')">
-        </div>
-    </div>
-
-    <div class="input-group">
-        <label>🗺️ Map Management</label>
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="new-map-name" placeholder="Name">
-            <input type="file" id="new-map-file" style="display:none">
-            <button onclick="document.getElementById('new-map-file').click()" style="background:#475569; font-size:12px; width:auto">📁 Photo</button>
-        </div>
-        <button class="btn-add" onclick="addNewMap()">Add Map</button>
-        
-        <div class="admin-map-list" id="admin-map-list">
-            <!-- Map list for deletion here -->
-        </div>
-    </div>
-
-    <button onclick="savePNG()">Save PNG</button>
 </div>
 
 <div class="preview-area">
     <div id="export-screen">
         <div class="teams-header">
             <div class="team-info">
-                <img src="https://via.placeholder.com/150" id="logo-t1" class="main-logo">
-                <div class="team-n" id="out-t1-n">NAVI</div>
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23111'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23333' font-size='12' font-family='sans-serif'%3ELOGO%3C/text%3E%3C/svg%3E" id="logo-t1" class="main-logo">
+                <div class="team-n" id="out-t1-n">TEAM NAME</div>
             </div>
-            <div class="vs">VS</div>
+            <div class="vs-txt">VS</div>
             <div class="team-info">
-                <img src="https://via.placeholder.com/150" id="logo-t2" class="main-logo">
-                <div class="team-n" id="out-t2-n">FAZE</div>
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23111'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23333' font-size='12' font-family='sans-serif'%3ELOGO%3C/text%3E%3C/svg%3E" id="logo-t2" class="main-logo">
+                <div class="team-n" id="out-t2-n">TEAM NAME</div>
             </div>
         </div>
 
@@ -147,31 +221,31 @@
 
         <div class="stats-block">
             <div class="stat-row">
-                <img src="https://via.placeholder.com/150" id="mini-t1-1" class="mini-logo">
+                <img id="mini-t1-1" class="mini-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23222'/%3E%3C/svg%3E">
                 <div class="bar-container">
-                    <div id="b1-l" class="bar-fill" style="background: var(--accent);"></div>
-                    <div id="b1-r" class="bar-fill" style="background: #334155;"></div>
+                    <div id="b1-l" class="bar-fill" style="background: var(--c1); width:65%"></div>
+                    <div id="b1-r" class="bar-fill" style="background: #334155; width:35%"></div>
                 </div>
                 <div class="stat-label">WINRATE</div>
-                <img src="https://via.placeholder.com/150" id="mini-t2-1" class="mini-logo">
+                <img id="mini-t2-1" class="mini-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23222'/%3E%3C/svg%3E">
             </div>
             <div class="stat-row">
-                <img src="https://via.placeholder.com/150" id="mini-t1-2" class="mini-logo">
+                <img id="mini-t1-2" class="mini-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23222'/%3E%3C/svg%3E">
                 <div class="bar-container">
-                    <div id="b2-l" class="bar-fill" style="background: var(--accent);"></div>
-                    <div id="b2-r" class="bar-fill" style="background: #334155;"></div>
+                    <div id="b2-l" class="bar-fill" style="background: var(--c1); width:40%"></div>
+                    <div id="b2-r" class="bar-fill" style="background: #334155; width:60%"></div>
                 </div>
                 <div class="stat-label">MAP POOL</div>
-                <img src="https://via.placeholder.com/150" id="mini-t2-2" class="mini-logo">
+                <img id="mini-t2-2" class="mini-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23222'/%3E%3C/svg%3E">
             </div>
             <div class="stat-row">
-                <img src="https://via.placeholder.com/150" id="mini-t1-3" class="mini-logo">
+                <img id="mini-t1-3" class="mini-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23222'/%3E%3C/svg%3E">
                 <div class="bar-container">
-                    <div id="b3-l" class="bar-fill" style="background: var(--accent);"></div>
-                    <div id="b3-r" class="bar-fill" style="background: #334155;"></div>
+                    <div id="b3-l" class="bar-fill" style="background: var(--c1); width:55%"></div>
+                    <div id="b3-r" class="bar-fill" style="background: #334155; width:45%"></div>
                 </div>
                 <div class="stat-label">WIN PROB.</div>
-                <img src="https://via.placeholder.com/150" id="mini-t2-3" class="mini-logo">
+                <img id="mini-t2-3" class="mini-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23222'/%3E%3C/svg%3E">
             </div>
         </div>
     </div>
@@ -179,20 +253,46 @@
 
 <script>
     let maps = [
-        { id: 1, name: 'ANUBIS', url: 'https://img.redbull.com/images/c_limit,w_1500,h_1000,f_auto,q_auto/redbullcom/2022/12/12/fdt6l3j7kym68ix6fscq/anubis-csgo' },
-        { id: 2, name: 'MIRAGE', url: 'https://i.redd.it/0q1f0d0y1y971.jpg' },
-        { id: 3, name: 'INFERNO', url: 'https://Oyster.ignimgs.com/mediawiki/apis.ign.com/counter-strike-go/d/d4/Inferno_image.jpg' }
+        { id: 1, name: 'ANUBIS', url: '' },
+        { id: 2, name: 'MIRAGE', url: '' },
+        { id: 3, name: 'INFERNO', url: '' }
     ];
+    let pendingMapFile = null;
+
+    function syncColor(varName, hex, textId) {
+        document.documentElement.style.setProperty('--' + varName, hex);
+        document.getElementById(textId).value = hex;
+    }
+    function syncColorTxt(varName, val, pickId) {
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+            document.documentElement.style.setProperty('--' + varName, val);
+            document.getElementById(pickId).value = val;
+        }
+    }
+    function syncGrad(varName, hex, textId) {
+        document.documentElement.style.setProperty('--' + varName, hex);
+        document.getElementById(textId).value = hex;
+        updateGradient();
+    }
+    function syncGradTxt(varName, val, pickId) {
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+            document.documentElement.style.setProperty('--' + varName, val);
+            document.getElementById(pickId).value = val;
+            updateGradient();
+        }
+    }
+    function updateGradient() {
+        const ga = document.getElementById('cp-ga').value;
+        const gb = document.getElementById('cp-gb').value;
+        document.getElementById('export-screen').style.background = `linear-gradient(135deg, ${ga} 0%, ${gb} 100%)`;
+    }
 
     function syncStats(id, source) {
         const slider = document.getElementById(`s${id}`);
         const number = document.getElementById(`v${id}`);
-        
-        if (source === 'slider') {
-            number.value = slider.value;
-        } else {
-            if (number.value > 100) number.value = 100;
-            if (number.value < 0) number.value = 0;
+        if (source === 'slider') number.value = slider.value;
+        else {
+            number.value = Math.min(100, Math.max(0, number.value));
             slider.value = number.value;
         }
         update();
@@ -201,8 +301,7 @@
     function update() {
         document.getElementById('out-t1-n').innerText = document.getElementById('in-t1-n').value;
         document.getElementById('out-t2-n').innerText = document.getElementById('in-t2-n').value;
-
-        for(let i=1; i<=3; i++) {
+        for (let i = 1; i <= 3; i++) {
             const val = document.getElementById(`s${i}`).value;
             document.getElementById(`b${i}-l`).style.width = val + '%';
             document.getElementById(`b${i}-r`).style.width = (100 - val) + '%';
@@ -214,51 +313,35 @@
         reader.onload = () => {
             const data = reader.result;
             document.getElementById(`logo-t${teamNum}`).src = data;
-            for(let i=1; i<=3; i++) document.getElementById(`mini-t${teamNum}-${i}`).src = data;
+            for (let i = 1; i <= 3; i++) document.getElementById(`mini-t${teamNum}-${i}`).src = data;
         };
         reader.readAsDataURL(event.target.files[0]);
     }
 
-    function renderAll() {
-        // Render cards on screen
-        const container = document.getElementById('map-container');
-        container.innerHTML = '';
-        maps.forEach(map => {
-            const card = document.createElement('div');
-            card.className = 'map-card';
-            card.innerHTML = `<img src="${map.url}" class="map-img"><div class="badge">BAN</div><div class="map-name">${map.name}</div>`;
-            card.onclick = () => {
-                if (card.classList.contains('ban')) { card.classList.replace('ban', 'pick'); card.querySelector('.badge').innerText = 'PICK'; }
-                else if (card.classList.contains('pick')) { card.classList.replace('pick', 'decider'); card.querySelector('.badge').innerText = 'DECIDER'; }
-                else if (card.classList.contains('decider')) { card.classList.remove('decider'); }
-                else { card.classList.add('ban'); card.querySelector('.badge').innerText = 'BAN'; }
-            };
-            container.appendChild(card);
-        });
-
-        // Render list in admin
-        const adminList = document.getElementById('admin-map-list');
-        adminList.innerHTML = '';
-        maps.forEach(map => {
-            const item = document.createElement('div');
-            item.className = 'admin-map-item';
-            item.innerHTML = `<span>${map.name}</span> <button class="btn-delete" onclick="removeMap(${map.id})">🗑️</button>`;
-            adminList.appendChild(item);
-        });
+    function previewMapFile() {
+        const file = document.getElementById('new-map-file').files[0];
+        if (file) pendingMapFile = file;
     }
 
     function addNewMap() {
-        const name = document.getElementById('new-map-name').value;
-        const file = document.getElementById('new-map-file').files[0];
-        if (!name || !file) return alert("Please enter a name and select a photo!");
+        const name = document.getElementById('new-map-name').value.trim();
+        if (!name) return alert('Enter a map name.');
 
-        const reader = new FileReader();
-        reader.onload = () => {
-            maps.push({ id: Date.now(), name: name.toUpperCase(), url: reader.result });
+        const doAdd = (url) => {
+            maps.push({ id: Date.now(), name: name.toUpperCase(), url });
             document.getElementById('new-map-name').value = '';
+            document.getElementById('new-map-file').value = '';
+            pendingMapFile = null;
             renderAll();
         };
-        reader.readAsDataURL(file);
+
+        if (pendingMapFile) {
+            const reader = new FileReader();
+            reader.onload = () => doAdd(reader.result);
+            reader.readAsDataURL(pendingMapFile);
+        } else {
+            doAdd('');
+        }
     }
 
     function removeMap(id) {
@@ -266,10 +349,41 @@
         renderAll();
     }
 
+    function renderAll() {
+        // Preview cards
+        const container = document.getElementById('map-container');
+        container.innerHTML = '';
+        maps.forEach(map => {
+            const card = document.createElement('div');
+            card.className = 'map-card';
+
+            const imgSrc = map.url || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='190'%3E%3Crect width='130' height='190' fill='%23222'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23555' font-size='11' font-family='sans-serif'%3E${encodeURIComponent(map.name)}%3C/text%3E%3C/svg%3E`;
+
+            card.innerHTML = `<img src="${imgSrc}" class="map-img"><div class="badge">BAN</div><div class="map-name">${map.name}</div>`;
+            card.onclick = () => {
+                if (card.classList.contains('ban')) { card.classList.replace('ban','pick'); card.querySelector('.badge').innerText = 'PICK'; }
+                else if (card.classList.contains('pick')) { card.classList.replace('pick','decider'); card.querySelector('.badge').innerText = 'DECIDER'; }
+                else if (card.classList.contains('decider')) { card.classList.remove('decider'); }
+                else { card.classList.add('ban'); card.querySelector('.badge').innerText = 'BAN'; }
+            };
+            container.appendChild(card);
+        });
+
+        // Admin list
+        const adminList = document.getElementById('admin-map-list');
+        adminList.innerHTML = '';
+        maps.forEach(map => {
+            const item = document.createElement('div');
+            item.className = 'map-row';
+            item.innerHTML = `<span>${map.name}</span><button class="btn-del" onclick="removeMap(${map.id})">Remove</button>`;
+            adminList.appendChild(item);
+        });
+    }
+
     function savePNG() {
-        html2canvas(document.getElementById('export-screen'), { scale: 1.5 }).then(canvas => {
+        html2canvas(document.getElementById('export-screen'), { scale: 1.5, useCORS: true }).then(canvas => {
             const link = document.createElement('a');
-            link.download = 'analytics-hype.png';
+            link.download = 'analytics-studio.png';
             link.href = canvas.toDataURL();
             link.click();
         });
@@ -278,6 +392,5 @@
     renderAll();
     update();
 </script>
-
 </body>
 </html>
